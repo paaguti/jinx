@@ -176,6 +176,16 @@ checking."
 (defvar-local jinx-local-words ""
   "File-local words, as a string separated by whitespace.")
 
+(defvar jinx-prefix-path "/usr/local"
+  "This is the prefix of the path where libenchant2 was installed.
+Headers are expected to be in `(concat jinx-prefix-path \"/include\")'
+and libraries in `(concat jinx-prefix-path \"/lib\")'
+It will be used as a last resort when trying to compile the module.")
+
+;;;###autoload
+(put 'jinx-prefix-path 'safe-local-variable #'stringp)
+
+
 ;;;###autoload
 (put 'jinx-local-words 'safe-local-variable #'stringp)
 
@@ -606,7 +616,8 @@ If CHECK is non-nil, always check first."
                   ,@(split-string-and-unquote
                      (condition-case nil
                          (car (process-lines "pkg-config" "--cflags" "--libs" "enchant-2"))
-                       (error "-I/usr/include/enchant-2 -I/usr/local/include/enchant-2 -L/usr/local/lib -lenchant-2"))))))
+                       (error (format "-I%s/include/enchant-2 -L%s/lib -lenchant-2"
+                                      jinx-prefix-path jinx-prefix-path)))))))
           (with-current-buffer (get-buffer-create "*jinx module compilation*")
             (let ((inhibit-read-only t))
               (erase-buffer)
